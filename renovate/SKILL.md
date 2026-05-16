@@ -98,6 +98,7 @@ Typical examples may include:
 
 - Hyvä private Packagist
 - vendor-specific private Composer repositories not managed at org level
+- Amasty private Composer repository credentials when present in `auth.json`
 
 When generating `hostRules`:
 
@@ -123,6 +124,11 @@ If a Mirasvit private repository URL already contains embedded credentials direc
 
 Treat embedded credentials in the repository URL as sufficient for Renovate authentication in this case.
 
+### Amasty credentials exception
+Even though all `amasty/*` package updates must be disabled, if Amasty private repository credentials exist in `auth.json`, copy them into project-level `hostRules` exactly as-is.
+
+Disabling Amasty updates does **not** change the requirement to include Amasty private credentials from `auth.json` when present.
+
 ---
 
 ## 5) Always skip these dependency categories
@@ -147,6 +153,11 @@ Disable all `amasty/*` packages.
 Reason: Renovate cannot access the Amasty repository for this workflow, so those packages should be skipped.
 
 Use `enabled: false` inside matching `packageRules`, which Renovate supports for disabling matched dependencies.
+
+### Amasty grouping rule behavior
+Even though all `amasty/*` package updates are disabled, still detect Amasty base + Hyvä compatibility package pairs and generate grouping rules for confirmed pairs using the same base/Hyvä matching logic.
+
+Do not skip the grouping step just because the matched packages belong to `amasty/*`.
 
 ---
 
@@ -182,6 +193,8 @@ Determine base/compat pairs in this order:
 1. Find packages ending with `-hyva` and map them by removing the `-hyva` suffix.
 2. Apply known explicit Hyvä-to-base mappings for packages that do not follow the `-hyva` suffix convention.
 3. Only create a grouping rule if **both** the compat package and the base package exist in `composer.json`.
+
+This grouping step applies even when the base package belongs to `amasty/*` and Amasty updates are disabled.
 
 ### Generated package rule
 If **both** base and Hyvä compat module exist in `composer.json`, generate a `packageRules` entry with:
@@ -252,6 +265,7 @@ If credentials are available in `auth.json` and the host should be included, cop
 - it is project-specific
 - Renovate needs credentials to resolve packages
 - it is not already managed at organization level
+- it is an Amasty private registry with credentials present in `auth.json`, even though `amasty/*` updates are disabled
 
 ### Do not include a hostRule when:
 - it is Magento org-level config
@@ -292,7 +306,7 @@ Use patterns like:
 6. If the mapped base package exists, generate a grouping rule
 7. Inspect `repositories` in `composer.json`
 8. Inspect `http-basic` in `auth.json`
-9. Add only project-specific `hostRules`
+9. Add only project-specific `hostRules`, including Amasty credentials when present in `auth.json`
 10. Omit Magento and Studio Raz org-level credentials
 11. Omit Mirasvit `hostRules` when credentials are already embedded directly in the repository URL
 12. Normalize `composer.json` `config.platform.php` to `8.3.0` (add it if missing, update it if different, preserve existing `composer.json` structure)
@@ -300,7 +314,8 @@ Use patterns like:
    - Magento/core packages
    - `require-dev`
    - `amasty/*`
-14. Output final valid `renovate.json`
+14. Still generate confirmed base + Hyvä grouping rules even for Amasty package pairs
+15. Output final valid `renovate.json`
 
 ---
 
@@ -340,6 +355,8 @@ Populate `hostRules` and `packageRules` based on the rules above.
 - Private vendor repos should only be included when needed.
 - Composer repositories in `composer.json` do not automatically mean Renovate needs project-level credentials; only include those that are both private and project-specific.
 - For Mirasvit private repositories, if credentials are already embedded directly in the repository URL, do not add a project-level `hostRules` entry.
+- For Amasty private repositories, if credentials are present in `auth.json`, copy them into project-level `hostRules` even though `amasty/*` package updates are disabled.
+- Amasty base + Hyvä compat module grouping should still be generated when both packages are present.
 - For Magento repos with many vendor modules, grouping base + Hyvä compat packages reduces noisy PRs.
 
 ---
@@ -354,12 +371,14 @@ Before returning the file, verify:
 - Studio Raz org-level hostRule is omitted
 - included project-level credentials were copied exactly as-is from `auth.json`
 - Mirasvit `hostRules` are omitted when credentials are embedded directly in repository URLs
+- Amasty credentials from `auth.json` are included in project-level `hostRules` when present
 - Amasty is disabled
 - `require-dev` is disabled
 - `composer.json` has `config.platform.php` set to `8.3.0`
 - existing `composer.json` structure is preserved when normalizing `config.platform.php`
 - all discovered base/Hyvä pairs are grouped
 - explicit mappings for known Hyvä packages were applied
+- Amasty base + Hyvä pairs are still grouped when both packages exist
 - config is limited to `composer.json`
 - Composer manager is enabled
 
