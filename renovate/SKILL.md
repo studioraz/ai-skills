@@ -43,6 +43,7 @@ Read and analyze:
 - `require`
 - `require-dev`
 - `repositories`
+- `config.platform.php`
 
 Use this to determine:
 
@@ -51,6 +52,23 @@ Use this to determine:
 - which Hyvä compat modules exist and which base modules they correspond to
 - whether Amasty packages exist
 - whether Magento or Studio Raz package sources are referenced
+- whether `config.platform.php` exists and is set to `8.3.0`
+
+### composer.json PHP platform normalization (required)
+Always ensure `composer.json` contains `config.platform.php` with value `8.3.0`.
+
+- If `config.platform.php` is missing, add it while preserving the rest of the existing `composer.json` structure:
+
+  ```json
+  "config": {
+    "platform": {
+      "php": "8.3.0"
+    }
+  }
+  ```
+
+- If `config.platform.php` exists with a different value, change it to `8.3.0`.
+- This normalization is required whenever generating or updating the Magento Renovate-related project setup.
 
 ### auth.json
 If `auth.json` exists, inspect the `http-basic` entries.
@@ -107,13 +125,11 @@ Do not modify their casing or formatting.
 Add `packageRules` to disable:
 
 ### Magento platform/core upgrades
-Disable updates for Magento/Mage-OS platform packages that should not be upgraded automatically in project PRs, including when present:
+Disable updates for Magento platform/core packages that should not be upgraded automatically in project PRs, including when present:
 
 - `magento/product-community-edition`
 - `magento/magento2-base`
 - `magento/framework`
-- `mage-os/product-community-edition`
-- any additional clearly equivalent platform package if found
 
 Purpose: prevent platform upgrade PRs.
 
@@ -273,12 +289,12 @@ Use patterns like:
 8. Inspect `http-basic` in `auth.json`
 9. Add only project-specific `hostRules`
 10. Omit Magento and Studio Raz org-level credentials
-11. Add ignore rules for:
+11. Normalize `composer.json` `config.platform.php` to `8.3.0` (add it if missing, update it if different, preserve existing `composer.json` structure)
+12. Add ignore rules for:
    - Magento/core packages
-   - Mage-OS platform package if present
    - `require-dev`
    - `amasty/*`
-12. Output final valid `renovate.json`
+13. Output final valid `renovate.json`
 
 ---
 
@@ -332,6 +348,8 @@ Before returning the file, verify:
 - included project-level credentials were copied exactly as-is from `auth.json`
 - Amasty is disabled
 - `require-dev` is disabled
+- `composer.json` has `config.platform.php` set to `8.3.0`
+- existing `composer.json` structure is preserved when normalizing `config.platform.php`
 - all discovered base/Hyvä pairs are grouped
 - explicit mappings for known Hyvä packages were applied
 - config is limited to `composer.json`
