@@ -31,7 +31,7 @@ Generate a `renovate.json` with this base structure:
 - `"includePaths": ["composer.json"]`
 - `"composer": { "enabled": true }`
 
-Use Renovate config keys exactly as documented. `hostRules` is the correct place for credentials, `packageRules` is the correct place for package-level behavior, and `groupName` groups matched updates into one PR. Also, `matchDepTypes` may be used to disable `require-dev` updates. citeturn0search0
+Use Renovate config keys exactly as documented. `hostRules` is the correct place for credentials, `packageRules` is the correct place for package-level behavior, and `groupName` groups matched updates into one PR. Also, `matchDepTypes` may be used to disable `require-dev` updates. 
 
 ---
 
@@ -52,7 +52,7 @@ Use this to determine:
 - which Hyvä compat modules exist and which base modules they correspond to
 - whether Amasty packages exist
 - whether Magento or Studio Raz package sources are referenced
-- whether `config.platform.php` exists and is set to `8.3.0`
+- whether `config.platform.php` exists skip it
 
 ### composer.json PHP platform normalization (required)
 Always ensure `composer.json` contains `config.platform.php` with value `8.3.0`.
@@ -67,7 +67,7 @@ Always ensure `composer.json` contains `config.platform.php` with value `8.3.0`.
   }
   ```
 
-- If `config.platform.php` exists with a different value, change it to `8.3.0`.
+- If `config.platform.php` exists with a different value, skip it.
 - This normalization is required whenever generating or updating the Magento Renovate-related project setup.
 
 ### auth.json
@@ -108,7 +108,7 @@ When generating `hostRules`:
 - if a matching repository URL exists in `composer.json`, prefer using the repository URL as `matchHost`
 - otherwise use the host from `auth.json`
 
-Renovate supports credentials through `hostRules`, and `matchHost` can be either a hostname or a full base URL. `hostRules` is specifically intended for authenticated hosts. citeturn0search0
+Renovate supports credentials through `hostRules`, and `matchHost` can be either a hostname or a full base URL. `hostRules` is specifically intended for authenticated hosts. 
 
 ### Credential copy rule
 If a host should be included in project-level `hostRules`, copy the `username` and `password` from `auth.json` exactly as they appear.
@@ -141,7 +141,7 @@ Disable all `amasty/*` packages.
 
 Reason: Renovate cannot access the Amasty repository for this workflow, so those packages should be skipped.
 
-Use `enabled: false` inside matching `packageRules`, which Renovate supports for disabling matched dependencies. citeturn0search0
+Use `enabled: false` inside matching `packageRules`, which Renovate supports for disabling matched dependencies. 
 
 ---
 
@@ -197,7 +197,7 @@ If no nice product label can be inferred, use a safe fallback like:
 
 - `<base package name> + Hyva`
 
-Grouping related packages via `groupName` is a supported Renovate pattern. citeturn0search0
+Grouping related packages via `groupName` is a supported Renovate pattern. 
 
 ### Examples
 
