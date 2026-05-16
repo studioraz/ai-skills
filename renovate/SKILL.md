@@ -251,7 +251,6 @@ If credentials are available in `auth.json` and the host should be included, cop
 ### Do not include a hostRule when:
 - it is Magento org-level config
 - it is Studio Raz org-level config
-- the registry is Amasty and packages will be disabled anyway
 - the registry is unused by dependencies in `composer.json`
 
 ### Create a grouping rule when:
