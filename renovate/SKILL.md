@@ -31,7 +31,7 @@ Generate a `renovate.json` with this base structure:
 - `"includePaths": ["composer.json"]`
 - `"composer": { "enabled": true }`
 
-Use Renovate config keys exactly as documented. `hostRules` is the correct place for credentials, `packageRules` is the correct place for package-level behavior, and `groupName` groups matched updates into one PR. Also, `matchDepTypes` may be used to disable `require-dev` updates. 
+Use Renovate config keys exactly as documented. `hostRules` is the correct place for credentials, `packageRules` is the correct place for package-level behavior, and `groupName` groups matched updates[...]
 
 ---
 
@@ -108,7 +108,7 @@ When generating `hostRules`:
 - if a matching repository URL exists in `composer.json`, prefer using the repository URL as `matchHost`
 - otherwise use the host from `auth.json`
 
-Renovate supports credentials through `hostRules`, and `matchHost` can be either a hostname or a full base URL. `hostRules` is specifically intended for authenticated hosts. 
+Renovate supports credentials through `hostRules`, and `matchHost` can be either a hostname or a full base URL. `hostRules` is specifically intended for authenticated hosts.
 
 ### Credential copy rule
 If a host should be included in project-level `hostRules`, copy the `username` and `password` from `auth.json` exactly as they appear.
@@ -117,6 +117,11 @@ Do not replace them with placeholders.
 Do not redact them.  
 Do not rename them.  
 Do not modify their casing or formatting.
+
+### Mirasvit exception
+If a Mirasvit private repository URL already contains embedded credentials directly in the repository URL, do **not** add a `hostRules` entry for Mirasvit.
+
+Treat embedded credentials in the repository URL as sufficient for Renovate authentication in this case.
 
 ---
 
@@ -141,7 +146,7 @@ Disable all `amasty/*` packages.
 
 Reason: Renovate cannot access the Amasty repository for this workflow, so those packages should be skipped.
 
-Use `enabled: false` inside matching `packageRules`, which Renovate supports for disabling matched dependencies. 
+Use `enabled: false` inside matching `packageRules`, which Renovate supports for disabling matched dependencies.
 
 ---
 
@@ -197,7 +202,7 @@ If no nice product label can be inferred, use a safe fallback like:
 
 - `<base package name> + Hyva`
 
-Grouping related packages via `groupName` is a supported Renovate pattern. 
+Grouping related packages via `groupName` is a supported Renovate pattern.
 
 ### Examples
 
@@ -252,6 +257,7 @@ If credentials are available in `auth.json` and the host should be included, cop
 - it is Magento org-level config
 - it is Studio Raz org-level config
 - the registry is unused by dependencies in `composer.json`
+- it is a Mirasvit private repository whose repository URL already embeds the credentials
 
 ### Create a grouping rule when:
 - a Hyvä compat package exists
@@ -288,12 +294,13 @@ Use patterns like:
 8. Inspect `http-basic` in `auth.json`
 9. Add only project-specific `hostRules`
 10. Omit Magento and Studio Raz org-level credentials
-11. Normalize `composer.json` `config.platform.php` to `8.3.0` (add it if missing, update it if different, preserve existing `composer.json` structure)
-12. Add ignore rules for:
+11. Omit Mirasvit `hostRules` when credentials are already embedded directly in the repository URL
+12. Normalize `composer.json` `config.platform.php` to `8.3.0` (add it if missing, update it if different, preserve existing `composer.json` structure)
+13. Add ignore rules for:
    - Magento/core packages
    - `require-dev`
    - `amasty/*`
-13. Output final valid `renovate.json`
+14. Output final valid `renovate.json`
 
 ---
 
@@ -332,6 +339,7 @@ Populate `hostRules` and `packageRules` based on the rules above.
 - Magento Composer repos often require auth, but org-level Renovate config may already cover common hosts.
 - Private vendor repos should only be included when needed.
 - Composer repositories in `composer.json` do not automatically mean Renovate needs project-level credentials; only include those that are both private and project-specific.
+- For Mirasvit private repositories, if credentials are already embedded directly in the repository URL, do not add a project-level `hostRules` entry.
 - For Magento repos with many vendor modules, grouping base + Hyvä compat packages reduces noisy PRs.
 
 ---
@@ -345,6 +353,7 @@ Before returning the file, verify:
 - Magento org-level hostRule is omitted
 - Studio Raz org-level hostRule is omitted
 - included project-level credentials were copied exactly as-is from `auth.json`
+- Mirasvit `hostRules` are omitted when credentials are embedded directly in repository URLs
 - Amasty is disabled
 - `require-dev` is disabled
 - `composer.json` has `config.platform.php` set to `8.3.0`
@@ -353,3 +362,5 @@ Before returning the file, verify:
 - explicit mappings for known Hyvä packages were applied
 - config is limited to `composer.json`
 - Composer manager is enabled
+
+```
